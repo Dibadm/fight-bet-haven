@@ -772,6 +772,42 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_adjust_balance: {
+        Args: {
+          p_actor: string
+          p_amount: number
+          p_reason: string
+          p_user: string
+        }
+        Returns: undefined
+      }
+      enter_fight_result: {
+        Args: {
+          p_actor: string
+          p_fight: string
+          p_method: Database["public"]["Enums"]["victory_method"]
+          p_notes: string
+          p_outcome: Database["public"]["Enums"]["fight_outcome"]
+          p_round: number
+          p_time: string
+        }
+        Returns: {
+          confirmed_at: string
+          ending_round: number | null
+          ending_time: string | null
+          entered_by: string | null
+          fight_id: string
+          method: Database["public"]["Enums"]["victory_method"]
+          notes: string | null
+          outcome: Database["public"]["Enums"]["fight_outcome"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "fight_results"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -780,6 +816,228 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      log_admin_action: {
+        Args: {
+          p_action: string
+          p_actor: string
+          p_after: Json
+          p_before: Json
+          p_entity_id: string
+          p_entity_type: string
+          p_reason: string
+        }
+        Returns: undefined
+      }
+      place_bet: {
+        Args: {
+          p_idem: string
+          p_selection: string
+          p_stake: number
+          p_user: string
+        }
+        Returns: {
+          fight_id: string
+          id: string
+          idempotency_key: string | null
+          market_id: string
+          odds_snapshot: number
+          payout_amount: number
+          placed_at: string
+          potential_payout: number
+          selection_id: string
+          settled_at: string | null
+          settlement_id: string | null
+          stake: number
+          status: Database["public"]["Enums"]["bet_status"]
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      preview_settlement: { Args: { p_fight: string }; Returns: Json }
+      request_withdrawal: {
+        Args: {
+          p_amount: number
+          p_details: Json
+          p_method: string
+          p_user: string
+        }
+        Returns: {
+          amount: number
+          id: string
+          paid_at: string | null
+          payout_details: Json
+          payout_method: string
+          rejection_reason: string | null
+          requested_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["withdrawal_status"]
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "withdrawals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      review_deposit: {
+        Args: {
+          p_actor: string
+          p_approve: boolean
+          p_deposit: string
+          p_reason: string
+        }
+        Returns: {
+          amount: number
+          id: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          sms_hash: string
+          sms_text: string
+          status: Database["public"]["Enums"]["deposit_status"]
+          submitted_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "deposits"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      review_withdrawal: {
+        Args: {
+          p_actor: string
+          p_decision: string
+          p_reason: string
+          p_withdrawal: string
+        }
+        Returns: {
+          amount: number
+          id: string
+          paid_at: string | null
+          payout_details: Json
+          payout_method: string
+          rejection_reason: string | null
+          requested_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["withdrawal_status"]
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "withdrawals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      risk_dashboard: { Args: never; Returns: Json }
+      selection_matches_result: {
+        Args: {
+          p_method: Database["public"]["Enums"]["victory_method"]
+          p_outcome: Database["public"]["Enums"]["fight_outcome"]
+          p_round: number
+          p_scheduled: number
+          p_spec: Json
+        }
+        Returns: boolean
+      }
+      set_market_status: {
+        Args: {
+          p_actor: string
+          p_market: string
+          p_status: Database["public"]["Enums"]["market_status"]
+        }
+        Returns: {
+          closes_at: string | null
+          created_at: string
+          fight_id: string
+          id: string
+          market_type_code: string
+          name: string
+          status: Database["public"]["Enums"]["market_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "markets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      settle_fight: {
+        Args: { p_actor: string; p_fight: string }
+        Returns: Json
+      }
+      submit_deposit: {
+        Args: { p_amount: number; p_sms: string; p_user: string }
+        Returns: {
+          amount: number
+          id: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          sms_hash: string
+          sms_text: string
+          status: Database["public"]["Enums"]["deposit_status"]
+          submitted_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "deposits"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_selection_odds: {
+        Args: { p_actor: string; p_odds: number; p_selection: string }
+        Returns: {
+          created_at: string
+          id: string
+          label: string
+          market_id: string
+          odds: number
+          outcome_spec: Json
+          sort_order: number
+          status: Database["public"]["Enums"]["selection_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "selections"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      void_bets_for_market: {
+        Args: { p_actor: string; p_market: string; p_reason: string }
+        Returns: number
+      }
+      wallet_apply: {
+        Args: {
+          p_actor?: string
+          p_avail_delta: number
+          p_deposit_delta?: number
+          p_held_delta: number
+          p_idem?: string
+          p_notes?: string
+          p_ref_id?: string
+          p_ref_type?: string
+          p_type: Database["public"]["Enums"]["txn_type"]
+          p_user: string
+          p_withdraw_delta?: number
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "user" | "admin" | "super_admin"
