@@ -58,3 +58,12 @@ export function unwrap<T>(res: { data: T | null; error: { message: string } | nu
   }
   return res.data as T;
 }
+
+// Loosely-typed RPC caller: generated types mark optional SQL args as required,
+// so nullable arguments are passed through here.
+export function rpc(name: string, params: Record<string, unknown>) {
+  return (supabaseAdmin.rpc as unknown as (
+    n: string,
+    p: Record<string, unknown>,
+  ) => Promise<{ data: unknown; error: { message: string } | null }>)(name, params);
+}

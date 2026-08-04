@@ -7,9 +7,9 @@ const uuid = z.string().uuid();
 export const adminOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabaseAdmin, assertAdmin, unwrap } = await import("./db.server");
+    const { supabaseAdmin, assertAdmin, unwrap, rpc } = await import("./db.server");
     await assertAdmin(context.userId);
-    const risk = unwrap(await supabaseAdmin.rpc("risk_dashboard", {}));
+    const risk = unwrap(await rpc("risk_dashboard", {}));
     const [{ data: deposits }, { data: withdrawals }, { data: txns }] = await Promise.all([
       supabaseAdmin
         .from("deposits")
@@ -70,10 +70,10 @@ export const reviewDeposit = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabaseAdmin, assertAdmin, unwrap } = await import("./db.server");
+    const { supabaseAdmin, assertAdmin, unwrap, rpc } = await import("./db.server");
     await assertAdmin(context.userId);
     return unwrap(
-      await supabaseAdmin.rpc("review_deposit", {
+      await rpc("review_deposit", {
         p_actor: context.userId,
         p_deposit: data.depositId,
         p_approve: data.approve,
@@ -94,10 +94,10 @@ export const reviewWithdrawal = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabaseAdmin, assertAdmin, unwrap } = await import("./db.server");
+    const { supabaseAdmin, assertAdmin, unwrap, rpc } = await import("./db.server");
     await assertAdmin(context.userId);
     return unwrap(
-      await supabaseAdmin.rpc("review_withdrawal", {
+      await rpc("review_withdrawal", {
         p_actor: context.userId,
         p_withdrawal: data.withdrawalId,
         p_decision: data.decision,
@@ -112,10 +112,10 @@ export const updateOdds = createServerFn({ method: "POST" })
     z.object({ selectionId: uuid, odds: z.number().min(1.01).max(1000) }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabaseAdmin, assertAdmin, unwrap } = await import("./db.server");
+    const { supabaseAdmin, assertAdmin, unwrap, rpc } = await import("./db.server");
     await assertAdmin(context.userId);
     return unwrap(
-      await supabaseAdmin.rpc("update_selection_odds", {
+      await rpc("update_selection_odds", {
         p_actor: context.userId,
         p_selection: data.selectionId,
         p_odds: data.odds,
@@ -134,10 +134,10 @@ export const setMarketStatus = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabaseAdmin, assertAdmin, unwrap } = await import("./db.server");
+    const { supabaseAdmin, assertAdmin, unwrap, rpc } = await import("./db.server");
     await assertAdmin(context.userId);
     return unwrap(
-      await supabaseAdmin.rpc("set_market_status", {
+      await rpc("set_market_status", {
         p_actor: context.userId,
         p_market: data.marketId,
         p_status: data.status,
@@ -177,7 +177,7 @@ export const setFightStatus = createServerFn({ method: "POST" })
       .update({ status: data.status, updated_at: new Date().toISOString() })
       .eq("id", data.fightId);
     if (error) throw new Error(error.message);
-    await supabaseAdmin.rpc("log_admin_action", {
+    await rpc("log_admin_action", {
       p_actor: context.userId,
       p_action: "fight_status_changed",
       p_entity_type: "fight",
@@ -204,10 +204,10 @@ export const enterFightResult = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabaseAdmin, assertAdmin, unwrap } = await import("./db.server");
+    const { supabaseAdmin, assertAdmin, unwrap, rpc } = await import("./db.server");
     await assertAdmin(context.userId);
     return unwrap(
-      await supabaseAdmin.rpc("enter_fight_result", {
+      await rpc("enter_fight_result", {
         p_actor: context.userId,
         p_fight: data.fightId,
         p_outcome: data.outcome,
@@ -223,19 +223,19 @@ export const previewSettlement = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ fightId: uuid }).parse(input))
   .handler(async ({ data, context }) => {
-    const { supabaseAdmin, assertAdmin, unwrap } = await import("./db.server");
+    const { supabaseAdmin, assertAdmin, unwrap, rpc } = await import("./db.server");
     await assertAdmin(context.userId);
-    return unwrap(await supabaseAdmin.rpc("preview_settlement", { p_fight: data.fightId }));
+    return unwrap(await rpc("preview_settlement", { p_fight: data.fightId }));
   });
 
 export const confirmSettlement = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ fightId: uuid, confirm: z.literal(true) }).parse(input))
   .handler(async ({ data, context }) => {
-    const { supabaseAdmin, assertAdmin, unwrap } = await import("./db.server");
+    const { supabaseAdmin, assertAdmin, unwrap, rpc } = await import("./db.server");
     await assertAdmin(context.userId);
     return unwrap(
-      await supabaseAdmin.rpc("settle_fight", { p_actor: context.userId, p_fight: data.fightId }),
+      await rpc("settle_fight", { p_actor: context.userId, p_fight: data.fightId }),
     );
   });
 
@@ -251,10 +251,10 @@ export const adminAdjustBalance = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabaseAdmin, assertAdmin, unwrap } = await import("./db.server");
+    const { supabaseAdmin, assertAdmin, unwrap, rpc } = await import("./db.server");
     await assertAdmin(context.userId, true);
     unwrap(
-      await supabaseAdmin.rpc("admin_adjust_balance", {
+      await rpc("admin_adjust_balance", {
         p_actor: context.userId,
         p_user: data.userId,
         p_amount: data.amount,
