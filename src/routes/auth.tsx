@@ -1,99 +1,79 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { toast } from "sonner";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { AppShell } from "@/components/AppShell";
+import { telegramAuth } from "@/lib/telegram.functions";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({
-    meta: [
-      { title: "Sign in — HFC Predict" },
-      {
-        name: "description",
-        content: "Sign in or create an account to place predictions and manage your HFC wallet.",
-      },
-      { property: "og:title", content: "Sign in — HFC Predict" },
-      { property: "og:description", content: "Access your predictions and wallet." },
-    ],
-  }),
+  ssr: false,
+  beforeLoad: async () => {
+    const { data } = await supabase.auth.getUser();
+    if (data.user) throw redirect({ to: "/" });
+  },
   component: AuthPage,
 });
 
 function AuthPage() {
-  const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const telegramAuthFn = useServerFn(telegramAuth);
+  const isTelegram = typeof window !== "undefined" && !!(window as unknown as { Telegram?: unknown }).Telegram;
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (!isTelegram) return;
     setBusy(true);
-    try {
-      if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: window.location.origin },
-        });
-        if (error) throw error;
-        if (!data.session) {
-          toast.success("Check your email to confirm your account");
+    const tg = (window as unknown as { Telegram?: { WebApp?: { initData: string } } }).Telegram?.WebApp;
+    if (!tg?.initData) {
+      setBusy(false);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          if (!cancelled) window.location.href = "/";
           return;
         }
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+
+        const { data, error } = await telegramAuthFn({ initData: tg.initData });
+        if (cancelled) return;
+        if (error || !data?.email || !data?.password) {
+          throw new Error(error?.message ?? "Telegram auth failed");
+        }
+
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+        });
+
+        if (signInError) throw signInError;
+        if (!cancelled) window.location.href = "/";
+      } catch (err) {
+        if (!cancelled) setError((err as Error).message);
+      } finally {
+        if (!cancelled) setBusy(false);
       }
-      navigate({ to: "/" });
-    } catch (err) {
-      toast.error((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
+    })();
+
+    return () => { cancelled = true; };
+  }, [isTelegram, telegramAuthFn]);
 
   return (
-    <AppShell>
-      <div className="surface animate-rise mx-auto max-w-sm p-6">
-        <h1 className="text-3xl leading-none">{mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Your wallet, predictions and history stay tied to this account.
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="max-w-sm text-center">
+        <h1 className="text-3xl leading-none">TELEGRAM ONLY</h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          {isTelegram
+            ? busy
+              ? "Signing you in…"
+              : error
+                ? `Auth failed: ${error}`
+                : "Open this app from Telegram."
+            : "Open this app inside Telegram to continue."}
         </p>
-
-        <form onSubmit={onSubmit} className="mt-5 space-y-3">
-          <input
-            type="email"
-            required
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
-          />
-          <input
-            type="password"
-            required
-            minLength={6}
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
-          />
-          <button
-            disabled={busy}
-            className="w-full rounded-lg bg-primary py-3 text-sm font-bold uppercase tracking-wide text-primary-foreground disabled:opacity-50"
-          >
-            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
-          </button>
-        </form>
-
-        <button
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="mt-4 w-full text-center text-xs text-muted-foreground underline"
-        >
-          {mode === "signin" ? "No account? Create one" : "Already have an account? Sign in"}
-        </button>
       </div>
-    </AppShell>
+    </div>
   );
 }

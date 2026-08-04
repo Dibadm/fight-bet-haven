@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Swords, Ticket, Wallet2, LogIn } from "lucide-react";
+import { Swords, Ticket, Wallet2 } from "lucide-react";
 import { getMe } from "@/lib/user.functions";
 import { useSession } from "@/hooks/useSession";
 import { ETB } from "@/lib/format";
@@ -53,12 +53,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </span>
             </Link>
           ) : (
-            <Link
-              to="/auth"
-              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
-            >
-              <LogIn className="size-4" /> Sign in
-            </Link>
+            <span className="text-[11px] text-muted-foreground">Open in Telegram</span>
           )}
         </div>
         <div className="border-t border-border/60 bg-elevated/60 px-4 py-1 text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
