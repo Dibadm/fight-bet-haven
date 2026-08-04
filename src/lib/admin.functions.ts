@@ -165,7 +165,7 @@ export const setFightStatus = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabaseAdmin, assertAdmin } = await import("./db.server");
+    const { supabaseAdmin, assertAdmin, rpc } = await import("./db.server");
     await assertAdmin(context.userId);
     const { data: before } = await supabaseAdmin
       .from("fights")
