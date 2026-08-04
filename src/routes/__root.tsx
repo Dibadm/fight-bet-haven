@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useTelegramAuth } from "@/hooks/useTelegramAuth";
 
 function NotFoundComponent() {
   return (
@@ -116,13 +117,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
-
-  useEffect(() => {
-    const tg = (window as unknown as { Telegram?: { WebApp?: { ready: () => void; expand: () => void } } })
-      .Telegram?.WebApp;
-    tg?.ready();
-    tg?.expand();
-  }, []);
+  useTelegramAuth();
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
