@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Swords, Ticket, Wallet2, ShieldCheck, LogIn } from "lucide-react";
+import { Swords, Ticket, Wallet2, LogIn } from "lucide-react";
 import { getMe } from "@/lib/user.functions";
 import { useSession } from "@/hooks/useSession";
 import { ETB } from "@/lib/format";
@@ -70,7 +70,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border/70 bg-background/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-2xl items-stretch">
-          {[...NAV, ...(me?.isAdmin ? [{ to: "/admin", label: "Admin", icon: ShieldCheck }] : [])].map(
+          {NAV.map(
             (item) => {
               const active = item.to === "/" ? path === "/" : path.startsWith(item.to);
               return (
