@@ -1,6 +1,5 @@
 import 'dotenv/config';
-import pkg from 'node-telegram-bot-api';
-const { TelegramBot } = pkg;
+import TelegramBot from 'node-telegram-bot-api';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const webAppUrl = process.env.WEB_APP_URL || 'https://fight-bet-haven-lzuihsko0-dibadms-projects.vercel.app';
