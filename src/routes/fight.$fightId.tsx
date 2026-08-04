@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -210,12 +210,9 @@ function FightPage() {
                 {busy ? "Placing…" : "Confirm prediction"}
               </button>
             ) : (
-              <Link
-                to="/auth"
-                className="mt-3 block w-full rounded-lg bg-primary py-3 text-center text-sm font-bold uppercase tracking-wide text-primary-foreground"
-              >
-                Sign in to predict
-              </Link>
+              <div className="mt-3 rounded-lg border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+                Open this fight card inside Telegram to place a prediction.
+              </div>
             )}
             <p className="mt-2 text-center text-[10px] text-muted-foreground">
               Available: {ETB(me?.wallet.available_balance)} · odds are locked when you confirm

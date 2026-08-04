@@ -56,9 +56,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span className="text-[11px] text-muted-foreground">Open in Telegram</span>
           )}
         </div>
-        <div className="border-t border-border/60 bg-elevated/60 px-4 py-1 text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-          Demo mode — no real money is accepted or paid out
-        </div>
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-5">{children}</main>
