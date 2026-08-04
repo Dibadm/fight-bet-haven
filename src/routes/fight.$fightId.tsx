@@ -121,12 +121,12 @@ function FightPage() {
         </div>
       </section>
 
-      {fight.fight_results?.[0] && (
+      {fight.fight_results && (
         <p className="surface mt-4 p-4 text-sm">
           <span className="text-muted-foreground">Official result: </span>
-          {fight.fight_results[0].outcome.replace("_", " ")} ·{" "}
-          {fight.fight_results[0].method.replace("_", "/")}
-          {fight.fight_results[0].ending_round ? ` · R${fight.fight_results[0].ending_round}` : ""}
+          {fight.fight_results.outcome.replace("_", " ")} ·{" "}
+          {fight.fight_results.method.replace("_", "/")}
+          {fight.fight_results.ending_round ? ` · R${fight.fight_results.ending_round}` : ""}
         </p>
       )}
 
