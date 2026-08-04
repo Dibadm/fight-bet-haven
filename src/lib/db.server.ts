@@ -1,5 +1,6 @@
 // Server-only helpers for the betting engine. Never imported from client code.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { Json } from "@/integrations/supabase/types";
 
 export { supabaseAdmin };
 
@@ -61,9 +62,9 @@ export function unwrap<T>(res: { data: T | null; error: { message: string } | nu
 
 // Loosely-typed RPC caller: generated types mark optional SQL args as required,
 // so nullable arguments are passed through here.
-export function rpc(name: string, params: Record<string, unknown>) {
+export function rpc<T = Json>(name: string, params: Record<string, unknown>) {
   return (supabaseAdmin.rpc as unknown as (
     n: string,
     p: Record<string, unknown>,
-  ) => Promise<{ data: unknown; error: { message: string } | null }>)(name, params);
+  ) => Promise<{ data: T | null; error: { message: string } | null }>)(name, params);
 }
