@@ -28,7 +28,7 @@ function WalletPage() {
   const fetchLedger = useServerFn(getLedger);
   const fetchDeposits = useServerFn(getMyDeposits);
   const deposit = useServerFn(submitDeposit);
-  const ledger = useQuery({ queryKey: ["ledger"], queryFn: () => fetchLedger({ data: {} }) });
+  const ledger = useQuery({ queryKey: ["ledger"], queryFn: () => fetchLedger() });
   const deposits = useQuery({ queryKey: ["deposits"], queryFn: () => fetchDeposits() });
   const [amount, setAmount] = useState("500");
   const [sms, setSms] = useState("");
@@ -92,13 +92,13 @@ function WalletPage() {
         </button>
       </form>
 
-      {!!deposits.data?.length && (
+      {!!deposits.data?.deposits.length && (
         <section className="surface mt-5 p-4">
           <h2 className="mb-3 text-xl leading-none">DEPOSIT REQUESTS</h2>
           <ul className="space-y-2 text-sm">
-            {deposits.data.map((d) => (
+            {deposits.data.deposits.map((d) => (
               <li key={d.id} className="flex items-center justify-between border-b border-border/50 pb-2">
-                <span className="text-muted-foreground">{shortDate(d.created_at)}</span>
+                <span className="text-muted-foreground">{shortDate(d.submitted_at)}</span>
                 <span className="tabular">{ETB(d.amount)}</span>
                 <span className="text-xs uppercase tracking-wider text-muted-foreground">
                   {d.status}
@@ -116,7 +116,7 @@ function WalletPage() {
           {ledger.data?.map((t) => (
             <li key={t.id} className="flex items-center justify-between gap-2 border-b border-border/50 pb-2">
               <span className="min-w-0">
-                <span className="block truncate">{TXN_LABEL[t.kind] ?? t.kind}</span>
+                <span className="block truncate">{TXN_LABEL[t.type] ?? t.type}</span>
                 <span className="text-[11px] text-muted-foreground">{shortDate(t.created_at)}</span>
               </span>
               <span className="tabular shrink-0 font-semibold">{ETB(t.amount)}</span>

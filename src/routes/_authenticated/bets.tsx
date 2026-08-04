@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/bets")({
 
 function BetsPage() {
   const fetchBets = useServerFn(getMyBets);
-  const { data, isLoading } = useQuery({ queryKey: ["my-bets"], queryFn: () => fetchBets({ data: {} }) });
+  const { data, isLoading } = useQuery({ queryKey: ["my-bets"], queryFn: () => fetchBets() });
 
   return (
     <AppShell>
@@ -41,7 +41,7 @@ function BetsPage() {
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{bet.selection?.label}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {bet.selection?.market?.name} · {shortDate(bet.created_at)}
+                  {bet.market?.name} · {shortDate(bet.placed_at)}
                 </p>
               </div>
               <span
@@ -64,7 +64,7 @@ function BetsPage() {
               </span>
               <span>
                 <span className="block text-muted-foreground">Odds</span>
-                <span className="odds-chip font-semibold text-gold">{odds(bet.odds)}</span>
+                <span className="odds-chip font-semibold text-gold">{odds(bet.odds_snapshot)}</span>
               </span>
               <span className="text-right">
                 <span className="block text-muted-foreground">Payout</span>
