@@ -15,46 +15,65 @@ export function useTelegramAuth() {
   const tried = useRef(false);
 
   useEffect(() => {
-    const tg = (window as unknown as { Telegram?: { WebApp?: { initData: string; ready: () => void; expand: () => void } } })
-      .Telegram?.WebApp;
+    let cancelled = false;
 
-    if (!tg) {
-      setState({ busy: false, error: null, done: true });
-      return;
-    }
+    async function init() {
+      let tg = (window as unknown as { Telegram?: { WebApp?: { initData: string; ready: () => void; expand: () => void } } })
+        .Telegram?.WebApp;
 
-    tg.ready();
-    tg.expand();
-
-    if (!tg.initData) {
-      if (!tried.current) {
-        tried.current = true;
-        const interval = setInterval(() => {
-          const t = (window as unknown as { Telegram?: { WebApp?: { initData: string } } }).Telegram?.WebApp;
-          if (t?.initData) {
-            clearInterval(interval);
-            doAuth(t.initData);
-          }
-        }, 200);
-        setTimeout(() => clearInterval(interval), 3000);
+      if (!tg) {
+        await new Promise<void>((resolve) => {
+          const check = setInterval(() => {
+            const t = (window as unknown as { Telegram?: { WebApp?: { initData: string } } }).Telegram?.WebApp;
+            if (t) {
+              clearInterval(check);
+              tg = t;
+              resolve();
+            }
+          }, 100);
+          setTimeout(() => { clearInterval(check); resolve(); }, 5000);
+        });
       }
-      return;
-    }
 
-    doAuth(tg.initData);
+      if (cancelled || !tg) {
+        setState({ busy: false, error: null, done: true });
+        return;
+      }
+
+      tg.ready();
+      tg.expand();
+
+      if (!tg.initData) {
+        if (!tried.current) {
+          tried.current = true;
+          const interval = setInterval(() => {
+            const t = (window as unknown as { Telegram?: { WebApp?: { initData: string } } }).Telegram?.WebApp;
+            if (t?.initData) {
+              clearInterval(interval);
+              doAuth(t.initData);
+            }
+          }, 200);
+          setTimeout(() => clearInterval(interval), 3000);
+        }
+        return;
+      }
+
+      doAuth(tg.initData);
+    }
 
     async function doAuth(initData: string) {
-      if (state.done) return;
+      if (cancelled) return;
       setState({ busy: true, error: null, done: false });
 
       try {
         const { data: session } = await supabase.auth.getSession();
         if (session.session) {
-          setState({ busy: false, error: null, done: true });
+          if (!cancelled) setState({ busy: false, error: null, done: true });
           return;
         }
 
         const data = await telegramAuthFn({ data: { initData } });
+        if (cancelled) return;
         if (!data?.email || !data?.password) {
           setState({ busy: false, error: "Telegram auth failed", done: true });
           return;
@@ -64,16 +83,23 @@ export function useTelegramAuth() {
           email: data.email,
           password: data.password,
         });
+        if (cancelled) return;
         if (signInError) {
           setState({ busy: false, error: signInError.message, done: true });
           return;
         }
 
-        setState({ busy: false, error: null, done: true });
+        if (!cancelled) setState({ busy: false, error: null, done: true });
       } catch (err) {
-        setState({ busy: false, error: (err as Error).message, done: true });
+        if (!cancelled) setState({ busy: false, error: (err as Error).message, done: true });
       }
     }
+
+    init();
+
+    return () => {
+      cancelled = true;
+    };
   }, [telegramAuthFn]);
 
   return state;
