@@ -110,7 +110,7 @@ function AdminMarkets() {
     <>
       {(fights.data ?? []).map((f) => {
         const expanded = openFight === f.id;
-        const res = f.fight_results?.[0];
+        const res = f.fight_results;
         const pv = previews[f.id] as
           | { won: number; lost: number; void: number; total_stakes: number; total_payout: number; platform_pl: number }
           | undefined;
@@ -371,7 +371,7 @@ function AdminMarkets() {
                       disabled={busy}
                       onClick={async () => {
                         try {
-                          const p = (await preview({ data: { fightId: f.id } })) as Record<string, unknown>;
+                          const p = (await preview({ data: { fightId: f.id } })) as unknown as Record<string, unknown>;
                           setPreviews({ ...previews, [f.id]: p });
                         } catch (e) {
                           toast.error((e as Error).message);
