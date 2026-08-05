@@ -63,15 +63,15 @@ function AuthPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-sm text-center">
-        <h1 className="text-3xl leading-none">TELEGRAM ONLY</h1>
+        <h1 className="text-3xl leading-none">HFC PREDICT</h1>
         <p className="mt-3 text-sm text-muted-foreground">
           {isTelegram
             ? busy
               ? "Signing you in…"
               : error
                 ? `Auth failed: ${error}`
-                : "Open this app from Telegram."
-            : "Open this app inside Telegram to continue."}
+                : "Open this app inside Telegram."
+            : "Please open this app inside Telegram to continue."}
         </p>
       </div>
     </div>
