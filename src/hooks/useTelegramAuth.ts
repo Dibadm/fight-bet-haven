@@ -36,10 +36,10 @@ export function useTelegramAuth() {
           return;
         }
 
-        const { data, error } = await telegramAuthFn({ initData: tg.initData });
+        const data = await telegramAuthFn({ data: { initData: tg!.initData } });
         if (cancelled) return;
-        if (error || !data?.email || !data?.password) {
-          setState({ busy: false, error: error?.message ?? "Telegram auth failed", done: true });
+        if (!data?.email || !data?.password) {
+          setState({ busy: false, error: "Telegram auth failed", done: true });
           return;
         }
 
