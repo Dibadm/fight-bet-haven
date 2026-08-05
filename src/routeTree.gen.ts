@@ -17,6 +17,7 @@ import { Route as AuthenticatedBetsRouteImport } from './routes/_authenticated/b
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
 import { Route as FightFightIdRouteImport } from './routes/fight.$fightId'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminEventsRouteImport } from './routes/_authenticated/admin.events'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -57,6 +58,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminEventsRoute =
+  AuthenticatedAdminEventsRouteImport.update({
+    id: '/events',
+    path: '/events',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/bets': typeof AuthenticatedBetsRoute
   '/wallet': typeof AuthenticatedWalletRoute
   '/fight/$fightId': typeof FightFightIdRoute
+  '/admin/events': typeof AuthenticatedAdminEventsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -73,6 +81,7 @@ export interface FileRoutesByTo {
   '/bets': typeof AuthenticatedBetsRoute
   '/wallet': typeof AuthenticatedWalletRoute
   '/fight/$fightId': typeof FightFightIdRoute
+  '/admin/events': typeof AuthenticatedAdminEventsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesById {
@@ -84,6 +93,7 @@ export interface FileRoutesById {
   '/_authenticated/bets': typeof AuthenticatedBetsRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
   '/fight/$fightId': typeof FightFightIdRoute
+  '/_authenticated/admin/events': typeof AuthenticatedAdminEventsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -95,9 +105,17 @@ export interface FileRouteTypes {
     | '/bets'
     | '/wallet'
     | '/fight/$fightId'
+    | '/admin/events'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/bets' | '/wallet' | '/fight/$fightId' | '/admin'
+  to:
+    | '/'
+    | '/auth'
+    | '/bets'
+    | '/wallet'
+    | '/fight/$fightId'
+    | '/admin/events'
+    | '/admin'
   id:
     | '__root__'
     | '/'
@@ -107,6 +125,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bets'
     | '/_authenticated/wallet'
     | '/fight/$fightId'
+    | '/_authenticated/admin/events'
     | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -175,14 +194,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/events': {
+      id: '/_authenticated/admin/events'
+      path: '/events'
+      fullPath: '/admin/events'
+      preLoaderRoute: typeof AuthenticatedAdminEventsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminEventsRoute: typeof AuthenticatedAdminEventsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminEventsRoute: AuthenticatedAdminEventsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
