@@ -1,8 +1,9 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Swords, Ticket, Wallet2 } from "lucide-react";
+import { ShieldCheck, Swords, Ticket, Wallet2 } from "lucide-react";
 import { getMe } from "@/lib/user.functions";
+import { adminAccess } from "@/lib/admin.functions";
 import { useSession } from "@/hooks/useSession";
 import { ETB } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,17 @@ export function useMe() {
   });
 }
 
+export function useIsAdmin() {
+  const { session } = useSession();
+  const fetchAccess = useServerFn(adminAccess);
+  return useQuery({
+    queryKey: ["admin-access", session?.user.id ?? "anon"],
+    queryFn: () => fetchAccess(),
+    enabled: !!session,
+    staleTime: 60_000,
+  });
+}
+
 const NAV = [
   { to: "/", label: "Fights", icon: Swords },
   { to: "/bets", label: "My bets", icon: Ticket },
@@ -28,6 +40,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { session } = useSession();
   const { data: me } = useMe();
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { data: access } = useIsAdmin();
+  const nav = access?.isAdmin
+    ? [...NAV, { to: "/admin" as const, label: "Admin", icon: ShieldCheck }]
+    : NAV;
 
   return (
     <div className="min-h-screen pb-24">
@@ -62,7 +78,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border/70 bg-background/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-2xl items-stretch">
-          {NAV.map(
+          {nav.map(
             (item) => {
               const active = item.to === "/" ? path === "/" : path.startsWith(item.to);
               return (
