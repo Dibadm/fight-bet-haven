@@ -39,11 +39,13 @@ export const adminFights = createServerFn({ method: "GET" })
       .from("fights")
       .select(
         `id, starts_at, status, scheduled_rounds, is_main_event, settled_at,
-         event:events ( id, name ),
          fighter_a:fighters!fights_fighter_a_id_fkey ( id, full_name ),
          fighter_b:fighters!fights_fighter_b_id_fkey ( id, full_name ),
-         markets ( id, name, status, market_type_code, selections ( id, label, odds, status ) ),
-         fight_results ( outcome, method, ending_round )`,
+         event_id, fighter_a_id, fighter_b_id, weight_class_id, bout_order,
+         event:events ( id, name ),
+         markets ( id, name, status, market_type_code, closes_at,
+           selections ( id, label, odds, status, sort_order, outcome_spec ) ),
+         fight_results ( outcome, method, ending_round, ending_time, notes )`,
       )
       .order("starts_at", { ascending: true });
     return data ?? [];
