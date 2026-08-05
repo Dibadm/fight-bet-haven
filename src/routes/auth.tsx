@@ -37,10 +37,10 @@ function AuthPage() {
           return;
         }
 
-        const { data, error } = await telegramAuthFn({ initData: tg.initData });
+        const data = await telegramAuthFn({ data: { initData: tg!.initData } });
         if (cancelled) return;
-        if (error || !data?.email || !data?.password) {
-          throw new Error(error?.message ?? "Telegram auth failed");
+        if (!data?.email || !data?.password) {
+          throw new Error("Telegram auth failed");
         }
 
         const { error: signInError } = await supabase.auth.signInWithPassword({

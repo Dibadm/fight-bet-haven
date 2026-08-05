@@ -47,7 +47,12 @@ async function verifyTelegramHash(params: URLSearchParams, hash: string, botToke
   );
 
   const signatureBytes = hexToBytes(hash);
-  return crypto.subtle.verify("HMAC", secretKey, signatureBytes, encoder.encode(dataCheckString));
+  return crypto.subtle.verify(
+    "HMAC",
+    secretKey,
+    signatureBytes as unknown as BufferSource,
+    encoder.encode(dataCheckString),
+  );
 }
 
 function hexToBytes(hex: string): Uint8Array {
@@ -58,9 +63,14 @@ function hexToBytes(hex: string): Uint8Array {
   return bytes;
 }
 
-async function createTelegramUser(user: { id: number; first_name: string; last_name?: string; username?: string }) {
+async function createTelegramUser(user: {
+  id: number;
+  first_name: string;
+  last_name?: string | undefined;
+  username?: string | undefined;
+}) {
   const supabaseAdmin = (await import("@/integrations/supabase/client.server")).supabaseAdmin;
-  const telegramId = String(user.id);
+  const telegramId = user.id;
   const email = `tg_${telegramId}@telegram.local`;
   const password = crypto.randomUUID();
 
@@ -79,7 +89,7 @@ async function createTelegramUser(user: { id: number; first_name: string; last_n
     email,
     password,
     email_confirm: true,
-    user_metadata: { telegram_id: telegramId, first_name: user.first_name, last_name: user.last_name, username: user.username },
+    user_metadata: { telegram_id: String(telegramId), first_name: user.first_name, last_name: user.last_name, username: user.username },
   });
 
   if (authError || !authData.user) {
@@ -89,8 +99,8 @@ async function createTelegramUser(user: { id: number; first_name: string; last_n
   const { error: profileError } = await supabaseAdmin.from("profiles").insert({
     id: authData.user.id,
     telegram_id: telegramId,
-    full_name: `${user.first_name}${user.last_name ? ` ${user.last_name}` : ""}`,
-    nickname: user.username,
+    telegram_username: user.username ?? null,
+    display_name: `${user.first_name}${user.last_name ? ` ${user.last_name}` : ""}`,
   });
 
   if (profileError) {

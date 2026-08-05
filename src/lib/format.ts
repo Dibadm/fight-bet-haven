@@ -11,6 +11,7 @@ export const shortDate = (iso: string) =>
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Africa/Addis_Ababa",
   });
 
 export const BET_STATUS_LABEL: Record<string, string> = {
