@@ -23,6 +23,36 @@ export const getSettings = createServerFn({ method: "GET" }).handler(async () =>
   return data;
 });
 
+export const debugMe = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin, getRoles, assertAdmin } = await import("./db.server");
+    const [{ data: profile }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("telegram_id, full_name").eq("id", context.userId).maybeSingle(),
+    ]);
+    let adminOk = false;
+    let roles: string[] = [];
+    try {
+      roles = await getRoles(context.userId);
+      await assertAdmin(context.userId);
+      adminOk = true;
+    } catch {
+      adminOk = false;
+    }
+    const envAdminIds = (process.env.ADMIN_TELEGRAM_IDS ?? "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0);
+    return {
+      userId: context.userId,
+      telegramId: profile?.telegram_id ?? null,
+      fullName: profile?.full_name ?? null,
+      roles,
+      adminOk,
+      envAdminIds,
+    };
+  });
+
 export const getEvents = createServerFn({ method: "GET" }).handler(async () => {
   const supabase = publicClient();
   const { data, error } = await supabase

@@ -70,7 +70,7 @@ function AuthPage() {
               ? "Signing you in…"
               : error
                 ? `Auth failed: ${error}`
-                : "Open this app inside Telegram."
+                : "Tap Open EFTC to launch the app inside Telegram."
             : "Please open this app inside Telegram to continue."}
         </p>
       </div>
