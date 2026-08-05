@@ -13,7 +13,21 @@ export async function getRoles(userId: string): Promise<AppRole[]> {
 }
 
 export async function assertAdmin(userId: string, requireSuper = false): Promise<AppRole[]> {
-  const roles = await getRoles(userId);
+  const envAdminIds = (process.env.ADMIN_TELEGRAM_IDS ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0);
+
+  let roles = await getRoles(userId);
+
+  if (envAdminIds.length > 0) {
+    const { data: profile } = await supabaseAdmin.from("profiles").select("telegram_id").eq("id", userId).maybeSingle();
+    const telegramId = profile?.telegram_id ?? null;
+    if (telegramId && envAdminIds.includes(String(telegramId))) {
+      roles = [...new Set([...roles, "admin"])];
+    }
+  }
+
   const ok = requireSuper
     ? roles.includes("super_admin")
     : roles.some((r) => r === "admin" || r === "super_admin");

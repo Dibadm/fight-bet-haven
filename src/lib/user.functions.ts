@@ -14,10 +14,19 @@ export const getMe = createServerFn({ method: "GET" })
     if (!wallet) {
       await supabaseAdmin.from("wallets").insert({ user_id: context.userId });
     }
+
+    const envAdminIds = (process.env.ADMIN_TELEGRAM_IDS ?? "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0);
+    const telegramId = profile?.telegram_id ?? null;
+    const envAdmin = !!telegramId && envAdminIds.includes(String(telegramId));
+    const isAdmin = envAdmin || roles.some((r) => r === "admin" || r === "super_admin");
+
     return {
       userId: context.userId,
-      roles,
-      isAdmin: roles.some((r) => r === "admin" || r === "super_admin"),
+      roles: envAdmin ? [...new Set([...roles, "admin"])] : roles,
+      isAdmin,
       profile,
       wallet: wallet ?? {
         user_id: context.userId,
